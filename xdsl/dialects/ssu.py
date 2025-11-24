@@ -32,6 +32,10 @@ class ComputeOp(IRDLOperation):
 
     traits = traits_def(IsolatedFromAbove())
 
+    assembly_format = (
+        "attr-dict `(` ($arguments^ `:` type($arguments))? `)` `:` type($res) $body"
+    )
+
     def __init__(
         self, operands: list[SSAValue], result_types: list[Attribute], region: Region
     ):
@@ -74,6 +78,8 @@ class YieldOp(IRDLOperation):
 
     traits = traits_def(HasParent(ComputeOp), IsTerminator(), ReturnLike())
 
+    assembly_format = "attr-dict ($arguments^ `:` type($arguments))?"
+
     def __init__(self, *operands: SSAValue):
         super().__init__(operands=[operands])
 
@@ -81,7 +87,7 @@ class YieldOp(IRDLOperation):
         compute_op = self.parent_op()
         assert isinstance(compute_op, ComputeOp)
 
-        compute_return_types = compute_op.res
+        compute_return_types = compute_op.res.types
         yield_types = self.arguments.types
         if compute_return_types != yield_types:
             raise VerifyException(
