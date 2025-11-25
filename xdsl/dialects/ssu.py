@@ -44,6 +44,13 @@ class ComputeOp(IRDLOperation):
         )
 
     def verify_(self) -> None:
+        assert self.body.first_block is not None
+        if self.body.first_block.arg_types != self.arguments.types:
+            raise VerifyException(
+                f"Block arguments ({', '.join(str(x) for x in self.body.first_block.arg_types)}) do not match the operation's "
+                f"arguments ({', '.join(str(x) for x in self.arguments.types)})."
+            )
+
         # Helper to verify SSU constraint
         def check_single_use(val: SSAValue, description: str):
             if val.has_more_than_one_use():
